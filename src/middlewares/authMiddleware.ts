@@ -1,9 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-interface DecodedToken {
+interface UserPayload {
   id: string;
   role: string;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: UserPayload;
+    }
+  }
 }
 
 export const authenticateJWT = (
@@ -15,7 +23,7 @@ export const authenticateJWT = (
   if (!token) return res.status(401).json({ message: "No token provided" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload;
     req.user = decoded;
     next();
   } catch {
@@ -25,7 +33,7 @@ export const authenticateJWT = (
 
 export const authorizeRoles = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!roles.includes(req.user?.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res
         .status(403)
         .json({ message: "Access denied: insufficient role" });

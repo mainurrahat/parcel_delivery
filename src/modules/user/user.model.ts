@@ -1,7 +1,9 @@
-import mongoose, { Schema, Document } from "mongoose";
+// user.model.ts
+import mongoose, { Schema, Document, Types } from "mongoose";
 import bcrypt from "bcrypt";
 
 export interface IUser extends Document {
+  _id: Types.ObjectId; // explicitly add _id as ObjectId
   name: string;
   email: string;
   password: string;
